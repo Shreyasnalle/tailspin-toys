@@ -40,4 +40,14 @@ export default [
       parser: tseslint.parser,
     },
   },
+
+  // Keep application TypeScript formatting consistent without requiring a formatter.
+  {
+    files: ["db/**/*.ts", "src/**/*.ts"],
+    rules: {
+      semi: ["error", "always"],
+      quotes: ["error", "single", { avoidEscape: true, allowTemplateLiterals: true }],
+      "comma-dangle": ["error", "always-multiline"],
+    },
+  },
 ];
