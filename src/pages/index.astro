@@ -34,6 +34,18 @@ const [games, categories, publishers] = await Promise.all([
       {games.length > 0 && (
         <form class="mb-8 rounded-xl border border-slate-700 bg-slate-800/60 p-5" data-testid="game-filters">
           <div class="flex flex-col gap-6 lg:flex-row lg:items-end">
+            <div class="min-w-56 flex-1">
+              <label for="game-search" class="mb-3 block text-sm font-semibold text-slate-200">Search by title</label>
+              <input
+                id="game-search"
+                type="search"
+                name="search"
+                placeholder="Search games"
+                class="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                data-testid="game-search"
+              />
+            </div>
+
             <fieldset class="flex-1">
               <legend class="mb-3 text-sm font-semibold text-slate-200">Filter by category</legend>
               <div class="flex flex-wrap gap-3">
@@ -85,7 +97,7 @@ const [games, categories, publishers] = await Promise.all([
       )}
       {games.length > 0 && (
         <div class="hidden" data-testid="no-filter-results">
-          <EmptyState text="No games match the selected filters." />
+          <EmptyState text="No games match your search or selected filters." />
         </div>
       )}
     </div>
@@ -106,6 +118,7 @@ const [games, categories, publishers] = await Promise.all([
         ),
       );
       const selectedPublisher = filterForm.querySelector<HTMLSelectElement>('select[name="publisher"]')?.value ?? '';
+      const searchTerm = filterForm.querySelector<HTMLInputElement>('input[name="search"]')?.value.trim().toLowerCase() ?? '';
       let visibleCount = 0;
 
       cards.forEach((card) => {
@@ -113,7 +126,8 @@ const [games, categories, publishers] = await Promise.all([
           selectedCategories.size === 0 || selectedCategories.has(card.dataset.categoryId ?? '');
         const publisherMatches =
           selectedPublisher === '' || selectedPublisher === (card.dataset.publisherId ?? '');
-        const visible = categoryMatches && publisherMatches;
+        const titleMatches = (card.dataset.gameTitle ?? '').toLowerCase().includes(searchTerm);
+        const visible = categoryMatches && publisherMatches && titleMatches;
         card.classList.toggle('hidden', !visible);
         visibleCount += visible ? 1 : 0;
       });
@@ -123,6 +137,7 @@ const [games, categories, publishers] = await Promise.all([
     };
 
     filterForm.addEventListener('change', applyFilters);
+    filterForm.querySelector<HTMLInputElement>('input[name="search"]')?.addEventListener('input', applyFilters);
     filterForm.addEventListener('reset', () => requestAnimationFrame(applyFilters));
   }
 </script>

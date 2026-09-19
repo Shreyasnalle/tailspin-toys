@@ -41,6 +41,34 @@ test.describe('Game Listing and Navigation', () => {
     });
   });
 
+  test('should search games by title and show an empty state when there are no matches', async ({ page }) => {
+    await page.goto('/');
+
+    const searchInput = page.getByTestId('game-search');
+    await expect(searchInput).toHaveAccessibleName('Search by title');
+
+    await test.step('Search case-insensitively by a partial title', async () => {
+      const firstTitle = await page.getByTestId('game-title').first().innerText();
+      await searchInput.fill(firstTitle.toUpperCase());
+
+      const visibleCards = page.locator('[data-testid="game-card"]:visible');
+      await expect(visibleCards).toHaveCount(1);
+      await expect(visibleCards.first().getByTestId('game-title')).toContainText(firstTitle);
+      await expect(page.getByTestId('filter-results')).toHaveText('Showing 1 game');
+    });
+
+    await test.step('Show an empty state for a title with no matches', async () => {
+      await searchInput.fill('title-that-does-not-exist');
+
+      await expect(page.locator('[data-testid="game-card"]:visible')).toHaveCount(0);
+      await expect(page.getByTestId('no-filter-results')).toBeVisible();
+      await expect(page.getByTestId('no-filter-results')).toContainText(
+        'No games match your search or selected filters.',
+      );
+      await expect(page.getByTestId('filter-results')).toHaveText('Showing 0 games');
+    });
+  });
+
   test('should display games with titles on index page', async ({ page }) => {
     await test.step('Navigate to homepage', async () => {
       await page.goto('/');
