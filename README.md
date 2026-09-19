@@ -14,7 +14,7 @@ The database is migrated and seeded automatically before `dev`/`build` (via the 
 
 ## Game filtering
 
-The home page includes client-side filters for one or more categories and a publisher. Selected filters combine together, and the complete catalog remains prerendered in the static output.
+The home page includes client-side title search, category filters, and a publisher filter. Selected filters combine together, and the complete catalog remains prerendered in the static output.
 
 ## Using this template
 
