@@ -1,6 +1,46 @@
 import { test, expect, type Response } from '@playwright/test';
 
 test.describe('Game Listing and Navigation', () => {
+  test('should filter games by category and publisher', async ({ page }) => {
+    await page.goto('/');
+
+    const allCards = page.getByTestId('game-card');
+    const initialCount = await allCards.count();
+    const categoryFilter = page.locator('input[name="category"]').first();
+    const categoryLabel = await categoryFilter.evaluate(
+      (input) => input.parentElement?.textContent?.trim() ?? '',
+    );
+    let categoryCount = 0;
+    const publisherFilter = page.getByTestId('publisher-filter');
+    const publisherOption = publisherFilter.locator('option').nth(1);
+    const publisherName = await publisherOption.innerText();
+
+    await test.step('Filter by category', async () => {
+      await categoryFilter.check();
+      await expect(page.getByTestId('filter-results')).toHaveText(/Showing \d+ games?/);
+      const visibleCards = page.locator('[data-testid="game-card"]:visible');
+      categoryCount = await visibleCards.count();
+      expect(categoryCount).toBeLessThan(initialCount);
+      await expect(visibleCards.first()).toContainText(categoryLabel);
+    });
+
+    await test.step('Combine category and publisher filters', async () => {
+      await publisherFilter.selectOption({ label: publisherName });
+      await expect(page.getByTestId('filter-results')).toHaveText(/Showing \d+ games?/);
+      const visibleCards = page.locator('[data-testid="game-card"]:visible');
+      expect(await visibleCards.count()).toBeLessThan(categoryCount);
+      expect(await visibleCards.count()).toBeGreaterThan(0);
+      await expect(visibleCards.first()).toContainText(categoryLabel);
+      await expect(visibleCards.first()).toContainText(publisherName);
+    });
+
+    await test.step('Clear filters', async () => {
+      await page.getByTestId('clear-filters').click();
+      await expect(page.locator('[data-testid="game-card"]:visible')).toHaveCount(initialCount);
+      await expect(page.getByTestId('filter-results')).toHaveText(`Showing ${initialCount} games`);
+    });
+  });
+
   test('should display games with titles on index page', async ({ page }) => {
     await test.step('Navigate to homepage', async () => {
       await page.goto('/');
