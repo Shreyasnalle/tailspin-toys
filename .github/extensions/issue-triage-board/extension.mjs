@@ -140,7 +140,7 @@ async function addIssueToContext(issue) {
     });
 }
 
-async function startServer(instanceId) {
+async function startServer(_instanceId) {
     const issues = await fetchIssues();
     const server = createServer(async (request, response) => {
         try {
